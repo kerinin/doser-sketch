@@ -3,9 +3,7 @@
  * Initializes the library and runs the stepper
  * motor in alternating directions.
  */
-
-#include <TMCStepper.h>
-
+ 
 #define EN_PIN           7 // Enable
 #define DIR_PIN          9 // Direction
 #define STEP_PIN         8 // Step
@@ -17,8 +15,61 @@
                       // UltiMachine Einsy and Archim2 boards use 0.2
                       // Panucatt BSD2660 uses 0.1
                       // Watterott TMC5160 uses 0.075
+                      
+#include <TMCStepper.h>
+
+#include <ConfigurableFirmata.h>
+
+#include <DigitalInputFirmata.h>
+DigitalInputFirmata digitalInput;
+
+#include <DigitalOutputFirmata.h>
+DigitalOutputFirmata digitalOutput;
+
+#include <AnalogInputFirmata.h>
+AnalogInputFirmata analogInput;
+
+#include <AnalogOutputFirmata.h>
+AnalogOutputFirmata analogOutput;
+
+#include <AccelStepperFirmata.h>
+AccelStepperFirmata accelStepper;
+
+#include <FirmataExt.h>
+FirmataExt firmataExt;
+
+#include <AnalogWrite.h>
+
+#include <FirmataReporting.h>
+FirmataReporting reporting;
 
 TMC2130Stepper driver(CS_PIN, R_SENSE);
+
+void systemResetCallback()
+{
+  firmataExt.reset();
+}
+
+void initTransport()
+{
+  // Uncomment to save a couple of seconds by disabling the startup blink sequence.
+  Firmata.disableBlinkVersion();
+  Firmata.begin(9600);
+}
+
+void initFirmata()
+{
+  Firmata.setFirmwareVersion(FIRMATA_FIRMWARE_MAJOR_VERSION, FIRMATA_FIRMWARE_MINOR_VERSION);
+
+  firmataExt.addFeature(digitalInput);
+  firmataExt.addFeature(digitalOutput);
+  firmataExt.addFeature(analogInput);
+  firmataExt.addFeature(analogOutput);
+  firmataExt.addFeature(accelStepper);
+  firmataExt.addFeature(reporting);
+
+  Firmata.attach(SYSTEM_RESET, systemResetCallback);
+}
 
 void setup() {
   pinMode(EN_PIN, OUTPUT);
@@ -36,18 +87,44 @@ void setup() {
 
   driver.en_pwm_mode(true);       // Toggle stealthChop on TMC2130/2160/5130/5160
   driver.pwm_autoscale(true);     // Needed for stealthChop
+
+  initFirmata();
+
+  initTransport();
+
+  Firmata.parse(SYSTEM_RESET);
 }
 
 bool shaft = false;
 
-void loop() {
-  // Run 5000 steps and switch direction in software
+void loop()
+{
+
+  digitalInput.report();
+
+  while(Firmata.available()) {
+    Firmata.processInput();
+  }
+
+  if (reporting.elapsed()) {
+    analogInput.report();
+  }
+
+  accelStepper.update();
+
+
+/*
+ * NOTE: This runs at 6250 steps/s and works just fine. 
+ * AccelStepperFirmata seems to be limited to 1000 steps/s
+ * 
+    // Run 5000 steps and switch direction in software
   for (uint16_t i = 10000; i>0; i--) {
     digitalWrite(STEP_PIN, HIGH);
-    delayMicroseconds(80);
+    delayMicroseconds(160);
     digitalWrite(STEP_PIN, LOW);
-    delayMicroseconds(80);
+    delayMicroseconds(160);
   }
   shaft = !shaft;
   driver.shaft(shaft);
+*/
 }
