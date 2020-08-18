@@ -8,7 +8,6 @@
 #define DIR_PIN          9 // Direction
 #define STEP_PIN         8 // Step
 #define CS_PIN           10 // Chip select
-#define SERIAL_PORT Serial // TMC2208/TMC2224 HardwareSerial port
 
 #define R_SENSE 0.11f // Match to your driver
                       // SilentStepStick series use 0.11
@@ -54,7 +53,8 @@ void initTransport()
 {
   // Uncomment to save a couple of seconds by disabling the startup blink sequence.
   Firmata.disableBlinkVersion();
-  Firmata.begin(9600);
+  Serial1.begin(9600);
+  Firmata.begin(Serial1);
 }
 
 void initFirmata()
