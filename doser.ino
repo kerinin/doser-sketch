@@ -83,13 +83,12 @@ void setup() {
   driver.begin();                 //  SPI: Init CS pins and possible SW SPI pins
   driver.toff(5);                 // Enables driver in software
   driver.rms_current(900);        // Set motor RMS current
-  driver.microsteps(16);          // Set microsteps to 1/16th
-
-  driver.en_pwm_mode(true);       // Toggle stealthChop on TMC2130/2160/5130/5160
+  driver.microsteps(0);           // Set microsteps to 1/16th
+  driver.intpol(true);            // interpolate to 256 microsteps
+  driver.en_pwm_mode(true);       // Toggle stealthChop on
   driver.pwm_autoscale(true);     // Needed for stealthChop
 
   initFirmata();
-
   initTransport();
 
   Firmata.parse(SYSTEM_RESET);
@@ -99,7 +98,6 @@ bool shaft = false;
 
 void loop()
 {
-
   digitalInput.report();
 
   while(Firmata.available()) {
@@ -111,20 +109,4 @@ void loop()
   }
 
   accelStepper.update();
-
-
-/*
- * NOTE: This runs at 6250 steps/s and works just fine. 
- * AccelStepperFirmata seems to be limited to 1000 steps/s
- * 
-    // Run 5000 steps and switch direction in software
-  for (uint16_t i = 10000; i>0; i--) {
-    digitalWrite(STEP_PIN, HIGH);
-    delayMicroseconds(160);
-    digitalWrite(STEP_PIN, LOW);
-    delayMicroseconds(160);
-  }
-  shaft = !shaft;
-  driver.shaft(shaft);
-*/
 }
