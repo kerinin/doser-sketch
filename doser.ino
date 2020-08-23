@@ -84,11 +84,11 @@ void setup() {
   driver.begin();                 //  SPI: Init CS pins and possible SW SPI pins
   driver.toff(5);                 // Enables driver in software
   driver.rms_current(900);        // Set motor RMS current
-  driver.microsteps(0);           // Set microsteps to 1/16th
+  driver.microsteps(4);          // Set microsteps to 1/4th
   driver.intpol(true);            // interpolate to 256 microsteps
   driver.en_pwm_mode(true);       // Toggle stealthChop on
   driver.pwm_autoscale(true);     // Needed for stealthChop
-
+  
   initFirmata();
   initTransport();
 
