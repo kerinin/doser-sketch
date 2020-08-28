@@ -54,8 +54,10 @@ void initTransport()
   // Uncomment to save a couple of seconds by disabling the startup blink sequence.
   Firmata.disableBlinkVersion();
   // Use "Serial1" for UART, and "Serial" for USB
-  Serial.begin(9600);
-  Firmata.begin(Serial);
+  //Serial.begin(9600);
+  //Firmata.begin(Serial);
+  Serial1.begin(9600);
+  Firmata.begin(Serial1);
 }
 
 void initFirmata()
